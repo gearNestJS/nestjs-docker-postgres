@@ -1,0 +1,62 @@
+version: '3.7'
+
+services:
+  # основной сервис, который отвечает за запуск Postgres
+  bd:
+    # official postgres image
+    image: postgres
+    # будем использовать имя db для ссылки на этот сервис в различных команадах docker-compose
+    container_name: bd
+    # ensures that the container will automatically restart if it crashes or is stopped
+    restart: always
+    # maps the container port 5432 to the host port 5432
+    ports:
+      - 5432:5432
+    #  sets the default db name, username and password for the db
+    environment:
+      POSTGRES_DB: nest
+      POSTGRES_USER: nest
+      POSTGRES_PASSWORD: nest
+    # creates a named volume pgdata for storing the database data
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    command: npm run start:dev
+
+  # сервис, который отвечает за запуск Nest-приложения
+  app:
+    # В конфигурации build мы определяем context, который сообщает Docker, какие файлы должны быть отправлены демону Docker.
+    # В нашем случае это все наше приложение, и поэтому мы передаем ., что означает - весь текущий каталог.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # будем использовать имя app для ссылки на этот сервис в различных команадах docker-compose
+    container_name: app
+    # ensures that the container will automatically restart if it crashes or is stopped
+    restart: always
+    # maps the container port 3000 to the host port 3000
+    ports:
+      - 3000:3000
+    # mounts the src directory on the host to the /app/src directory in the container
+    volumes:
+      - ./src:/app/src
+    # specifies that this service depends on the db service
+    depends_on:
+      - bd
+
+  # сервис, который отвечает за запуск pgAdmin
+  pgadmin:
+    image: dpage/pgadmin4
+    # будем использовать имя pgadmin для ссылки на этот сервис в различных команадах docker-compose
+    container_name: pgadmin
+    # ensures that the container will automatically restart if it crashes or is stopped
+    restart: always
+    # maps the container port 80 to the host port 5050
+    ports:
+      - 5050:80
+    #  sets the default email and password for the pgAdmin login
+    environment:
+      PGADMIN_DEFAULT_EMAIL: test@test.com
+      PGADMIN_DEFAULT_PASSWORD: test
+    # service depends on the db service
+    depends_on:
+      - bd
