@@ -2,7 +2,7 @@
 
 # Specifies the base image for the Docker container
 # используем инструкцию AS для именования образа development. Имя здесь может быть любым; оно предназначено только для того, чтобы позже ссылаться на образ
-FROM node: 20 As development
+FROM node:20 As development
 
 # Sets the working directory inside the container to /app
 # каждая команда, которую выполняет Docker (определенная в инструкции RUN), будет выполняться в указанном контексте
@@ -13,6 +13,9 @@ COPY package*.json ./
 
 # Installs the application dependencies in the container
 RUN npm install
+
+# Прописывает номер порта, на котором будет работать приложение
+EXPOSE 3000
 
 # Copies the application code from the host machine to the /app directory in the container
 COPY . .
